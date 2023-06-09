@@ -7,13 +7,11 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 screen_rect = pygame.Rect(0, 0, WIDTH, HEIGHT)
 clock = pygame.time.Clock()
 
-
 #---------------------------GRID_settings-------------------------------
 class Grid:
     def __init__(self):
         self.n_tiles = 4
         self.tile_size = WIDTH//self.n_tiles
-
         self.offset = 10
         self.tiles = []
 
@@ -21,8 +19,7 @@ class Grid:
         for y in range(self.offset, HEIGHT, self.tile_size):
             for x in range(self.offset, WIDTH, self.tile_size):
                 tile_rect = pygame.Rect(x, y, self.tile_size - self.offset, self.tile_size - self.offset)
-                self.new_tile_size = tile_rect.size
-                
+                self.new_tile_size = tile_rect.size                
                 isalive = None
                 isBomb = False
                 color = (255, 255, 255)
@@ -53,8 +50,6 @@ class Grid:
                 else:   
                     x += temp1 
             y += temp1
-
-        print(neighbors)
         return neighbors
 
     def draw_grid(self, base_color, mpos):
@@ -64,34 +59,27 @@ class Grid:
             # tile[3] = isalive (bool)
         for tile in self.tiles:
             tile_rect = tile[0]     # TILE IS A LIST >>>> [rect, color isbomb]
-
             if tile[3] == True:
                 if tile_rect.collidepoint(*mpos):    # Click detection
                     self.selected_tile = tile
                     neighbors = self.get_neighbors(self.selected_tile)
-                    for n in neighbors: 
-                        # n[1] = (200, 50, 50)
-                        pass
-                        
+                    for n in neighbors:            
+                        pass                        
                     if tile[2] == True:
-                        tile[1] == (200, 200, 50)
-        
+                        tile[1] == (200, 200, 50)        
                 else:
                     tile[1] = base_color
-
-    
+                    
                 pygame.draw.rect(screen, tile[1], tile_rect)
                 
             else:
                 pygame.draw.rect(screen, (0, 50, 0), tile_rect)
-
-    
-        
+       
 #-----------------------------MAIN_LOOP----------------------------------
+
 grid = Grid()
 grid.make_grid()
 mpos = (0, 0)
-
 
 while True:
     screen.fill((30, 30, 30))
