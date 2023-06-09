@@ -2,7 +2,7 @@ import pygame, sys, random
 
 pygame.init()
 
-WIDTH, HEIGHT = 720, 720
+WIDTH, HEIGHT = 800, 800
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 screen_rect = pygame.Rect(0, 0, WIDTH, HEIGHT)
 clock = pygame.time.Clock()
@@ -23,7 +23,6 @@ class Grid:
                 tile_rect = pygame.Rect(x, y, self.tile_size - self.offset, self.tile_size - self.offset)
                 self.new_tile_size = tile_rect.size
                 
-
                 isalive = None
                 isBomb = False
                 color = (255, 255, 255)
@@ -32,13 +31,8 @@ class Grid:
                     isalive = False                   
                 else:
                     isalive = True
-                    if random.randint(1, 1) == 1:
-                        isBomb = True           
-                    else:
-                        isBomb = False
-                                                    #isalive = True           
+                    # isBomb = True
                 self.tiles.append( [tile_rect, color, isBomb, isalive] ) 
-    
           # [rect , color, isBomb, isalive]
 
     def get_neighbors(self, tile):
@@ -50,12 +44,17 @@ class Grid:
         for y in range( tile_y - temp1, tile_y + temp1*2, self.tile_size):
             for x in range( tile_x - temp1, tile_x + temp1*2, self.tile_size ):
                 outofBounds = (x < 10 or x > 798) or (y < 10 or y > 798)
-                same = (x == tile_x or y == tile_y)
-                if outofBounds or same: 
-                    continue
-                    
-                neighbors.append( [x, y] )
+                same = (x == tile_x and y == tile_y)
+                for neigh_tile in self.tiles:   #list of tiles with info
+                    if (neigh_tile[0].x == x and neigh_tile[0].y == y) and neigh_tile[3] == True and not same:
+                        neighbors.append( pygame.Rect(x, y, *self.new_tile_size) )  # returns list of Neighboring Rects
+                    else:
+                        continue
+                else:   
+                    x += temp1 
+            y += temp1
 
+        print(neighbors)
         return neighbors
 
     def draw_grid(self, base_color, mpos):
@@ -63,33 +62,29 @@ class Grid:
             # tile[1] = color
             # tile[2] = isBomb (bool)
             # tile[3] = isalive (bool)
-        
-
         for tile in self.tiles:
             tile_rect = tile[0]     # TILE IS A LIST >>>> [rect, color isbomb]
 
-           
             if tile[3] == True:
                 if tile_rect.collidepoint(*mpos):    # Click detection
                     self.selected_tile = tile
                     neighbors = self.get_neighbors(self.selected_tile)
-                    for neig in neighbors:
-                        tile[1] = (200, 50, 50)
-                
-                else:
-                    tile[1] = base_color
-    
-             
-                if tile[2] == True:
-                   tile[1] == (200, 200, 50)
+                    for n in neighbors: 
+                        # n[1] = (200, 50, 50)
+                        pass
+                        
+                    if tile[2] == True:
+                        tile[1] == (200, 200, 50)
         
                 else:
                     tile[1] = base_color
+
     
                 pygame.draw.rect(screen, tile[1], tile_rect)
                 
             else:
-                continue
+                pygame.draw.rect(screen, (0, 50, 0), tile_rect)
+
     
         
 #-----------------------------MAIN_LOOP----------------------------------
