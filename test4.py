@@ -7,27 +7,26 @@ screen = pygame.display.set_mode((WIDTH, HEIGHT))
 screen_rect = pygame.Rect(0, 0, WIDTH, HEIGHT)
 clock = pygame.time.Clock()
 
-
+ 
 #---------------------------GRID_settings-------------------------------
 class Grid:
     def __init__(self):
-        self.n_tiles = 7
+        self.n_tiles = 10
         self.tile_size = WIDTH//self.n_tiles
-        self.offset = 10
-        self.font = pygame.font.SysFont('Times New Roman', 10)
-
+        self.offset = self.n_tiles//10+5        # Useful when scaling
+        self.font = pygame.font.SysFont('Arial', 50, True, True)
         self.tiles = []
 
     def make_grid(self):
         for y in range(self.offset, HEIGHT, self.tile_size):
             for x in range(self.offset, WIDTH, self.tile_size):
                 tile_rect = pygame.Rect(x, y, self.tile_size - self.offset, self.tile_size - self.offset)
-                self.new_tile_size = tile_rect.size
+                self.new_tile_size = tile_rect.size      
                 
                 isalive = None
                 isBomb = False
                 color = (255, 255, 255)
-            
+                
                 if random.randint(1, self.n_tiles) == 1:
                     isalive = False                   
                 else:
@@ -50,10 +49,16 @@ class Grid:
                     if (neigh_tile[0].x == x and neigh_tile[0].y == y) and neigh_tile[3] == True and not same:
                         neighbors.append( neigh_tile )  # returns list of Neighboring Rects
         return neighbors
+
     
     def show_number(self, tile):
         neighbors = self.get_neighbors(tile)
-        print(len(neighbors))
+        num_neig = len(neighbors)
+        text = self.font.render(str(num_neig), False, (50, 50, 200))
+        text_box = text.get_rect()
+        text_box.center = tile[0].center
+        screen.blit(text, text_box)
+        
 
     def draw_grid(self, base_color, mpos):
             # tile[0] = tile_rect
@@ -66,15 +71,15 @@ class Grid:
                 pygame.draw.rect(screen, tile[1], tile_rect)    #DRAW FIRST
                 if tile_rect.collidepoint(*mpos):    # Click detection
                     self.selected_tile = tile
+                    self.show_number(self.selected_tile)   
                     neighbors = self.get_neighbors(self.selected_tile)
-                    
+
                     for n in neighbors:
                         self.tiles[ self.tiles.index(n) ][1] = (200, 200, 50)
                     tile[1] = (200, 50,50)
 
                 else:
-                    tile[1] = base_color
-                
+                    tile[1] = base_color              
         
 #-----------------------------MAIN_LOOP----------------------------------
 grid = Grid()
