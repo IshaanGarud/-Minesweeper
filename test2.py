@@ -15,7 +15,7 @@ class Grid:
         self.tile_size = WIDTH//self.n_tiles
 
         self.offset = 10
-        self.tiles = {}
+        self.tiles = []
 
     def make_grid(self):
         for y in range(self.offset, HEIGHT, self.tile_size):
@@ -28,13 +28,15 @@ class Grid:
                 # else:
                 #     isBomb = False
 
-                isBomb = False
-                self.tiles[ str(tile_rect.x), str(tile_rect.y) ] = tile_rect, isBomb    # (x, y) : tile, isBomb
+                isBomb = False ; color = (255, 255, 255)
+                # self.tiles[ str(tile_rect.x), str(tile_rect.y) ] = tile_rect, isBomb    # (x, y) : tile, isBomb
+                self.tiles.append( [tile_rect, color, isBomb] ) 
     
 
     def get_neighbors(self, tile):
+        tile_rect = tile[0]
         neighbors = []
-        tile_x, tile_y = int(tile[0]), int(tile[1])
+        tile_x, tile_y = tile_rect.x, tile_rect.y
         temp1 = self.new_tile_size[1] + self.offset
 
         for y in range( tile_y - temp1, tile_y + temp1*2, self.tile_size):
@@ -42,47 +44,43 @@ class Grid:
                 outofBounds = (x < 10 or x > 798) or (y < 10 or y > 798)
                 if outofBounds or (x == tile_x or y == tile_y): 
                     continue
-                neighbors.append( (str(x), str(y)) )
+                neighbors.append( [x, y] )
 
         return neighbors
 
-    """ def paint_neighbor(self, tile):
-        tile_neigh = self.get_neighbors(tile) """
-
     def draw_grid(self, base_color, mpos):
+        ne2 = None
+        color = base_color
+
+        """ for tile in self.tiles:
+            tile_rect = tile[0] """
 
         for tile in self.tiles:
-            tile_rect = self.tiles[tile][0]
-            color = base_color
-
-            myTile = ('10', '210')
-            nebo = self.get_neighbors(myTile)
+            # tile[0]  =  tile_rect
+            # tile[1] = color
+            # tile[2] = isBomb (bool)
+            tile_rect = tile[0]     # TILE IS A LIST >>>> [rect, color isbomb]
+            print(tile)
 
             if tile_rect.collidepoint(*mpos):    # Click detection
                 self.selected_tile = tile
-                neighbours = self.get_neighbors(self.selected_tile)       #('276', '276')
-                if tile in neighbours: 
-                    color = (200, 200, 50)
-                else:
-                    color = (200, 50, 50)
-            elif self.tiles[tile][1] == True or tile == ('10', '210'):
-                color = (0, 0, 255)
+                neighbors = self.get_neighbors(self.selected_tile)
+                for neig in neighbors:
+                    tile[1] = (200, 50, 50)
+
+            elif tile == ('10', '210'):
+                tile[1] = (0, 0, 255)
             else:
-                color = base_color
+                tile[1] = base_color
 
 
-            pygame.draw.rect(screen, color, tile_rect)
+            pygame.draw.rect(screen, tile[1], tile_rect)
 
         
 #-----------------------------MAIN_LOOP----------------------------------
 grid = Grid()
 grid.make_grid()
 mpos = (0, 0)
-test_tile = ('10', '210')
-
-
-# for temp in grid.tiles:
-#     print(grid.tiles[temp])
 
 
 
