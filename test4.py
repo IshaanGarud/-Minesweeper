@@ -11,7 +11,7 @@ clock = pygame.time.Clock()
 #---------------------------GRID_settings-------------------------------
 class Grid:
     def __init__(self):
-        self.n_tiles = 4
+        self.n_tiles = 7
         self.tile_size = WIDTH//self.n_tiles
         self.offset = 10
         self.font = pygame.font.SysFont('Times New Roman', 10)
@@ -49,19 +49,11 @@ class Grid:
                 for neigh_tile in self.tiles:   #list of tiles with info
                     if (neigh_tile[0].x == x and neigh_tile[0].y == y) and neigh_tile[3] == True and not same:
                         neighbors.append( neigh_tile )  # returns list of Neighboring Rects
-                    else:
-                        continue
-                else:   
-                    x += temp1 
-            y += temp1
         return neighbors
-
-
+    
     def show_number(self, tile):
         neighbors = self.get_neighbors(tile)
         print(len(neighbors))
-
-
 
     def draw_grid(self, base_color, mpos):
             # tile[0] = tile_rect
@@ -70,12 +62,12 @@ class Grid:
             # tile[3] = isalive (bool)
         for tile in self.tiles:
             tile_rect = tile[0]     # TILE IS A LIST >>>> [rect, color isbomb]
-
             if tile[3] == True:
-                pygame.draw.rect(screen, tile[1], tile_rect)
+                pygame.draw.rect(screen, tile[1], tile_rect)    #DRAW FIRST
                 if tile_rect.collidepoint(*mpos):    # Click detection
                     self.selected_tile = tile
                     neighbors = self.get_neighbors(self.selected_tile)
+                    
                     for n in neighbors:
                         self.tiles[ self.tiles.index(n) ][1] = (200, 200, 50)
                     tile[1] = (200, 50,50)
@@ -89,10 +81,8 @@ grid = Grid()
 grid.make_grid()
 mpos = (0, 0)
 
-
 while True:
     screen.fill((30, 30, 30))
-
     keys = pygame.key.get_pressed()
     for ev in pygame.event.get():
         if ev.type == pygame.QUIT or keys[pygame.K_ESCAPE]:
@@ -103,7 +93,6 @@ while True:
             mpos = pygame.mouse.get_pos()
 
     grid.draw_grid((255, 255, 255), mpos)
-
-    #pygame.draw.rect(screen, (200, 50, 200), screen_rect, 10)
+    
     pygame.display.flip()
     clock.tick(30)
