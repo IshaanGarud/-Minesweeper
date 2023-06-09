@@ -2,9 +2,9 @@ import pygame, sys, random
 
 pygame.init()
 
-WIDTH, HEIGHT = 800, 800
+WIDTH, HEIGHT = 720, 720
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-screen_rect = screen.get_rect()
+screen_rect = pygame.Rect(0, 0, WIDTH, HEIGHT)
 clock = pygame.time.Clock()
 
 
@@ -22,16 +22,24 @@ class Grid:
             for x in range(self.offset, WIDTH, self.tile_size):
                 tile_rect = pygame.Rect(x, y, self.tile_size - self.offset, self.tile_size - self.offset)
                 self.new_tile_size = tile_rect.size
+                
 
-                # if random.randint(0, self.n_tiles) == 1:
-                #     isBomb = True
-                # else:
-                #     isBomb = False
-
-                isBomb = False ; color = (255, 255, 255)
-                # self.tiles[ str(tile_rect.x), str(tile_rect.y) ] = tile_rect, isBomb    # (x, y) : tile, isBomb
-                self.tiles.append( [tile_rect, color, isBomb] ) 
+                isalive = None
+                isBomb = False
+                color = (255, 255, 255)
+            
+                if random.randint(1, self.n_tiles) == 1:
+                    isalive = False                   
+                else:
+                    isalive = True
+                    if random.randint(1, 1) == 1:
+                        isBomb = True           
+                    else:
+                        isBomb = False
+                                                    #isalive = True           
+                self.tiles.append( [tile_rect, color, isBomb, isalive] ) 
     
+          # [rect , color, isBomb, isalive]
 
     def get_neighbors(self, tile):
         tile_rect = tile[0]
@@ -42,46 +50,52 @@ class Grid:
         for y in range( tile_y - temp1, tile_y + temp1*2, self.tile_size):
             for x in range( tile_x - temp1, tile_x + temp1*2, self.tile_size ):
                 outofBounds = (x < 10 or x > 798) or (y < 10 or y > 798)
-                if outofBounds or (x == tile_x or y == tile_y): 
+                same = (x == tile_x or y == tile_y)
+                if outofBounds or same: 
                     continue
+                    
                 neighbors.append( [x, y] )
 
         return neighbors
 
     def draw_grid(self, base_color, mpos):
-        ne2 = None
-        color = base_color
-
-        """ for tile in self.tiles:
-            tile_rect = tile[0] """
-
-        for tile in self.tiles:
-            # tile[0]  =  tile_rect
+            # tile[0] = tile_rect
             # tile[1] = color
             # tile[2] = isBomb (bool)
+            # tile[3] = isalive (bool)
+        
+
+        for tile in self.tiles:
             tile_rect = tile[0]     # TILE IS A LIST >>>> [rect, color isbomb]
-            print(tile)
 
-            if tile_rect.collidepoint(*mpos):    # Click detection
-                self.selected_tile = tile
-                neighbors = self.get_neighbors(self.selected_tile)
-                for neig in neighbors:
-                    tile[1] = (200, 50, 50)
-
-            elif tile == ('10', '210'):
-                tile[1] = (0, 0, 255)
+           
+            if tile[3] == True:
+                if tile_rect.collidepoint(*mpos):    # Click detection
+                    self.selected_tile = tile
+                    neighbors = self.get_neighbors(self.selected_tile)
+                    for neig in neighbors:
+                        tile[1] = (200, 50, 50)
+                
+                else:
+                    tile[1] = base_color
+    
+             
+                if tile[2] == True:
+                   tile[1] == (200, 200, 50)
+        
+                else:
+                    tile[1] = base_color
+    
+                pygame.draw.rect(screen, tile[1], tile_rect)
+                
             else:
-                tile[1] = base_color
-
-
-            pygame.draw.rect(screen, tile[1], tile_rect)
-
+                continue
+    
         
 #-----------------------------MAIN_LOOP----------------------------------
 grid = Grid()
 grid.make_grid()
 mpos = (0, 0)
-
 
 
 while True:
@@ -98,5 +112,6 @@ while True:
 
     grid.draw_grid((255, 255, 255), mpos)
 
+    #pygame.draw.rect(screen, (200, 50, 200), screen_rect, 10)
     pygame.display.flip()
     clock.tick(30)
