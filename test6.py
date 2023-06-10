@@ -1,0 +1,124 @@
+import pygame, sys, random
+
+pygame.init()
+
+WIDTH, HEIGHT = 800, 800
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+screen_rect = pygame.Rect(0, 0, WIDTH, HEIGHT)
+clock = pygame.time.Clock()
+
+ 
+#---------------------------GRID_settings-------------------------------
+class Grid:
+    def __init__(self):
+        self.n_tiles = 10
+        self.tile_size = WIDTH//self.n_tiles
+        self.offset = self.n_tiles//10+5        # Useful when scaling
+        self.font = pygame.font.SysFont('Fira Code', self.tile_size//2, True)
+
+        self.bomb_count = 0
+        self.MAX_BOMBS = 10
+        self.tiles = []
+
+    def make_grid(self):
+        for y in range(self.offset, HEIGHT, self.tile_size):
+            for x in range(self.offset, WIDTH, self.tile_size):
+                tile_rect = pygame.Rect(x, y, self.tile_size - self.offset, self.tile_size - self.offset)
+                self.new_tile_size = tile_rect.size
+                
+                isalive = None
+                isBomb = False
+                color = (255, 255, 255)
+            
+                if random.randint(0, self.n_tiles//2) == 1:
+                    isalive = False                   
+                else:
+                    isalive = True
+                
+                if isalive and self.bomb_count != self.MAX_BOMBS:
+                    if random.randint(0, 5) == 1:
+                        isBomb = True
+                        self.bomb_count += 1
+                    else:
+                        isBomb = False
+
+                self.tiles.append( [tile_rect, color, isBomb, isalive] ) 
+        print(self.bomb_count)
+        # [rect , color, isBomb, isalive]
+
+
+
+    def get_neighbors(self, tile):
+        tile_rect = tile[0]
+        neighbors = []
+        tile_x, tile_y = tile_rect.x, tile_rect.y
+        temp1 = self.new_tile_size[1] + self.offset
+
+        for y in range( tile_y - temp1, tile_y + temp1*2, self.tile_size):
+            for x in range( tile_x - temp1, tile_x + temp1*2, self.tile_size ):
+                outofBounds = (x < 10 or x > 798) or (y < 10 or y > 798)
+                same = (x == tile_x and y == tile_y)
+
+                for neigh_tile in self.tiles:           #list of tiles with info
+                    if (neigh_tile[0].x == x and neigh_tile[0].y == y) and neigh_tile[3] == True and not same:
+                        neighbors.append( neigh_tile )          # returns list of Neighboring Rects
+        return neighbors
+
+
+    def show_number(self, tile):
+        neighbors = self.get_neighbors(tile)
+        num_neig = len(neighbors)
+        text = self.font.render(str(num_neig), False, (50, 50, 50))
+        text_box = text.get_rect()
+        text_box.center = tile[0].center
+        screen.blit(text, text_box)
+
+
+
+    def draw_grid(self, base_color, mpos):
+            # tile[0] = tile_rect
+            # tile[1] = color
+            # tile[2] = isBomb (bool)
+            # tile[3] = isalive (bool)
+
+        for tile in self.tiles:
+            tile_rect = tile[0]     # TILE IS A LIST >>>> [rect, color isbomb]
+
+            if tile[3] == True:
+                self.selected_tile = tile
+                neighbors = self.get_neighbors(self.selected_tile)
+
+                pygame.draw.rect(screen, tile[1], tile_rect)    #DRAW FIRST
+                self.show_number(self.selected_tile)   
+
+                if tile_rect.collidepoint(*mpos):    # Click detection
+                    for n in neighbors:
+                        self.tiles[ self.tiles.index(n) ][1] = (200, 200, 50)
+                if tile[2] == True:
+                    tile[1] = (50, 200, 50)
+                else:
+                    tile[1] = base_color
+                
+        
+#-----------------------------MAIN_LOOP----------------------------------
+grid = Grid()
+grid.make_grid()
+mpos = (0, 0)
+
+
+while True:
+    screen.fill((30, 30, 30))
+
+    keys = pygame.key.get_pressed()
+    for ev in pygame.event.get():
+        if ev.type == pygame.QUIT or keys[pygame.K_ESCAPE]:
+            pygame.quit()
+            sys.exit()
+
+        if ev.type == pygame.MOUSEBUTTONDOWN:
+            mpos = pygame.mouse.get_pos()
+
+    grid.draw_grid((255, 255, 255), mpos)
+
+    pygame.display.flip()
+    clock.tick(30)
